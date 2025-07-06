@@ -1,0 +1,37 @@
+{
+  "name": "com.doxfen.ai",
+  "version": "1.0.0",
+  "displayName": "Doxfen AI Assistant",
+  "description": "A Unity Editor-integrated AI assistant built to help developers generate scripts, debug code, and manage AI-driven workflows. Supports multi-chat, auto-attachment",
+  "unity": "2021.3",
+  "author": {
+    "name": "Doxfen Interactive",
+    "email": "doxfeninteractive@gmail.com"
+  },
+  "dependencies": {
+    "com.unity.editorcoroutines": "1.0.0",
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
+  },
+  "keywords": [
+    "unity",
+    "editor",
+    "ai",
+    "assistant",
+    "gemini",
+    "tool",
+    "chat",
+    "productivity",
+    "generator",
+    "debugging"
+  ],
+  "type": "tool",
+  "hideInEditor": false,
+  "license": "Doxfen-Free-Use",
+  "samples": [
+    {
+      "displayName": "AI Assistant Guide Scene",
+      "description": "A demo scene with documentation and logos to test and learn the Doxfen AI Assistant.",
+      "path": "Samples~/GuideScene"
+    }
+  ]
+}
