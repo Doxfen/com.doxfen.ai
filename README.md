@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="com.doxfen.ai/Documentation~/Thumbnail.png" alt="Doxfen AI Assistant Banner" width="100%">
+</p>
+
 \# Doxfen AI Assistant
 
 
