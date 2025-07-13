@@ -41,3 +41,31 @@ All notable changes to this package will be documented in this file.
 * Context-aware Unity command generation
 * Analyze Selected Game objects and all it's child's to find errors
 * Auto perform actions inside unity editor 
+
+
+\## \[1.0.1] - 2025-07-13
+
+
+
+\### Added
+
+* Removed preloaded chats for a cleaner startup experience
+* Fixed issues related to chat file saving
+* Updated and optimized the chat saving system
+
+
+
+---
+
+
+
+\## Upcoming
+
+
+
+* Export chat logs to Markdown or PDF
+* Custom AI model selection (e.g., Gemini Pro)
+* Optional user-defined API key input
+* Context-aware Unity command generation
+* Analyze Selected Game objects and all it's child's to find errors
+* Auto perform actions inside unity editor 

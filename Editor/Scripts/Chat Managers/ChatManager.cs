@@ -20,7 +20,7 @@ namespace Doxfen.Systems.AI
         public string title;
         public List<ChatMessage> messages = new List<ChatMessage>();
 
-        public static string SaveDirectory => Path.Combine("Packages/com.doxfen.ai/Runtime/Internal/Chats History/");
+        public static string SaveDirectory => Path.Combine(Directory.GetParent(Application.dataPath).FullName, ".doxfen/Chats");
 
         public string GetFilePath()
         {
