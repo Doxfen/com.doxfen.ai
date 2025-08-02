@@ -1,4 +1,5 @@
 ﻿using Doxfen.Systems.AI;
+using Doxfen.Systems.AI.Internal;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -65,6 +66,23 @@ namespace Doxfen.Systems.AI
         {
             var window = GetWindow<ChatAIWindow>(false, "AI Assistant", true);
             window.minSize = new Vector2(400, 600);
+            if (!DoxfenAITermsAgreementEditorWindow.AreTermsAccepted())
+            {
+                DoxfenAITermsAgreementEditorWindow.ShowWindow();
+            }
+            AnalyticsManager.SendEvent("chat_ai_opened", new Dictionary<string, object>
+            {
+                { "show_attachments_enabled", DoxfenAISettingsWindow.ShowAttachmentContent },
+                { "show_logs_enabled", DoxfenAISettingsWindow.ShowLogs },
+                { "hide_comments_enabled", DoxfenAISettingsWindow.HideCodeComments }
+            });
+        }
+
+        public static void HideWindow()
+        {
+            var window = GetWindow<ChatAIWindow>(false, "AI Assistant", true);
+            window.Close();
+            window = null;
         }
 
         void CheckAllSettings()
@@ -446,6 +464,39 @@ namespace Doxfen.Systems.AI
                     }
                 }
             });
+            // Drag-and-drop support for .cs files
+            rootVisualElement.RegisterCallback<DragUpdatedEvent>(evt =>
+            {
+                if (DragAndDrop.paths != null && DragAndDrop.paths.Length > 0)
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    evt.StopPropagation();
+                }
+            });
+
+            rootVisualElement.RegisterCallback<DragPerformEvent>(evt =>
+            {
+                if (DragAndDrop.paths != null && DragAndDrop.paths.Length > 0)
+                {
+                    foreach (string path in DragAndDrop.paths)
+                    {
+                        if (!attachedFilePaths.Contains(path))
+                        {
+                            attachedFilePaths.Add(path);
+                        }
+                    }
+
+                    SessionState.SetString("DoxfenAttachedFiles", JsonConvert.SerializeObject(attachedFilePaths));
+                    RefreshAttachmentBar();
+
+                    DragAndDrop.AcceptDrag();
+                    evt.StopPropagation();
+
+                    // Optional: auto-attach
+                    TryAutoAttachScriptsFromDraggedPaths(DragAndDrop.paths);
+                }
+            });
+
 
             LoadAllChatButtons();
             if (ChatManager.currentChat != null && ChatManager.currentChat.messages.Count > 0)
@@ -472,6 +523,30 @@ namespace Doxfen.Systems.AI
                 attachedFilePaths = new List<string>();
             }
         }
+        private void TryAutoAttachScriptsFromDraggedPaths(string[] paths)
+        {
+            GameObject selectedObj = Selection.activeGameObject;
+            if (selectedObj == null) return;
+
+            foreach (string path in paths)
+            {
+                if (!path.EndsWith(".cs")) continue;
+
+                // Convert absolute path to relative Unity path
+                string assetPath = "Assets" + path.Replace(Application.dataPath, "").Replace("\\", "/");
+                MonoScript scriptAsset = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
+                if (scriptAsset != null && scriptAsset.GetClass() != null)
+                {
+                    Type scriptType = scriptAsset.GetClass();
+                    if (selectedObj.GetComponent(scriptType) == null)
+                    {
+                        Undo.AddComponent(selectedObj, scriptType);
+                        Debug.Log($"[Doxfen AI] Attached {scriptType.Name} to {selectedObj.name}");
+                    }
+                }
+            }
+        }
+
         private void RefreshAttachmentBar()
         {
             attachmentBar.Clear();
@@ -684,7 +759,7 @@ namespace Doxfen.Systems.AI
             }
         }
 
-        private void TrySendMessage()
+        private void  TrySendMessage()
         {
             bool isFirstMessageInChat = (ChatManager.currentChat == null || ChatManager.currentChat.messages.Count == 0);
             HideLogoIfVisible();
@@ -719,6 +794,7 @@ namespace Doxfen.Systems.AI
                     // 👇 Wrap file content in %%HIDDEN%% markers so it's excluded from UI
                     attachmentPrefix += "%%HIDDEN%%\n";
                     attachmentPrefix += $"**File: {fileName}**\n";
+                    attachmentPrefix += $"**Path: {path}**\n";
                     attachmentPrefix += "```\n" + content + "\n```\n";
                     attachmentPrefix += "%%HIDDEN%%\n\n";
                 }
@@ -751,6 +827,10 @@ namespace Doxfen.Systems.AI
             {
                 ChatManager.CreateNewChat();
                 ChatManager.SaveChat(ChatManager.currentChat);
+                AnalyticsManager.SendEvent("new_chat_created", new Dictionary<string, object>
+                {
+                    { "chat_title", ChatManager.currentChat.title }
+                });
             }
 
             currentPromptId = Guid.NewGuid().ToString();
@@ -952,6 +1032,7 @@ namespace Doxfen.Systems.AI
         // Add or replace this method in your ChatAIWindow class
         private List<VisualElement> ParseMessageContent(string message)
         {
+            ShowAttachmentsContent = DoxfenAISettingsWindow.ShowAttachmentContent;
             List<VisualElement> elements = new List<VisualElement>();
             bool insideCodeBlock = false;
             bool insideHiddenBlock = false;
@@ -969,10 +1050,7 @@ namespace Doxfen.Systems.AI
                     continue;
                 }
 
-                if (insideHiddenBlock && !ShowAttachmentsContent)
-                {
-                    continue;
-                }
+                bool skipContent = insideHiddenBlock && !ShowAttachmentsContent;
 
 
                 if (trimmed.StartsWith("```"))
@@ -986,23 +1064,33 @@ namespace Doxfen.Systems.AI
                     else
                     {
                         insideCodeBlock = false;
-                        string code = string.Join("\n", codeLines);
-                        elements.Add(CreateCodeBlock(code, codeLang));
+                        if (!skipContent)
+                        {
+                            string code = string.Join("\n", codeLines);
+                            elements.Add(CreateCodeBlock(code, codeLang));
+                        }
+
                     }
                     continue;
                 }
 
                 if (insideCodeBlock)
                 {
-                    codeLines.Add(line);
+                    if (!skipContent && insideCodeBlock)
+                    {
+                        codeLines.Add(line);
+                    }
                 }
                 else
                 {
-                    VisualElement parsed = TryParseFormattedLine(line);
-                    if (parsed != null)
+                    if (!skipContent)
                     {
-                        elements.Add(parsed);
-                        elements.Add(CreateSpacer()); // inject spacing
+                        VisualElement parsed = TryParseFormattedLine(line);
+                        if (parsed != null)
+                        {
+                            elements.Add(parsed);
+                            elements.Add(CreateSpacer()); // inject spacing
+                        }
                     }
                 }
             }
@@ -1190,6 +1278,21 @@ namespace Doxfen.Systems.AI
         private VisualElement CreateCodeBlock(string code, string language)
         {
             bool isDark = EditorGUIUtility.isProSkin;
+            string replaceablePath = null;
+
+            if (language.Contains("||"))
+            {
+                var parts = language.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+                language = parts[0].Trim();
+
+                foreach (var part in parts)
+                {
+                    if (part.TrimStart().StartsWith("ReplaceableFor:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        replaceablePath = part.Replace("ReplaceableFor:", "").Trim();
+                    }
+                }
+            }
 
             // Outer container with rounded border and padding
             var container = new VisualElement();
@@ -1223,14 +1326,39 @@ namespace Doxfen.Systems.AI
             langLabel.style.fontSize = 10;
             langLabel.style.color = isDark ? new Color(0.7f, 0.7f, 0.7f) : new Color(0.2f, 0.2f, 0.2f);
 
-            var copyBtn = new Button(() =>
+            Button copyBtn;
+            if (!string.IsNullOrEmpty(replaceablePath))
             {
-                EditorGUIUtility.systemCopyBuffer = code;
-                Debug.Log("Copied code to clipboard.");
-            })
+                // Create "Apply" button
+                copyBtn = new Button(() =>
+                {
+                    try
+                    {
+                        File.WriteAllText(replaceablePath, code);
+                        AssetDatabase.Refresh();
+                        Debug.Log($"✅ Applied code directly to: {replaceablePath}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"❌ Failed to apply code: {ex.Message}");
+                    }
+                })
+                {
+                    text = $"Apply to {Path.GetFileName(replaceablePath)}"
+                };
+            }
+            else
             {
-                text = "Copy"
-            };
+                // Default Copy button
+                copyBtn = new Button(() =>
+                {
+                    EditorGUIUtility.systemCopyBuffer = code;
+                    Debug.Log("Copied code to clipboard.");
+                })
+                {
+                    text = "Copy"
+                };
+            }
 
             copyBtn.style.fontSize = 11;
             copyBtn.style.height = 22;
@@ -1345,6 +1473,15 @@ namespace Doxfen.Systems.AI
                         }
                     });
 
+                }
+
+                if (!string.IsNullOrEmpty(replaceablePath))
+                {
+                    menu.AddItem(new GUIContent("Copy Code"), false, () =>
+                    {
+                        EditorGUIUtility.systemCopyBuffer = code;
+                        Debug.Log("Copied code to clipboard.");
+                    });
                 }
 
                 menu.ShowAsContext();

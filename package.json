@@ -1,6 +1,6 @@
 {
   "name": "com.doxfen.ai",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "displayName": "Doxfen AI Assistant",
   "description": "A Unity Editor-integrated AI assistant built to help developers generate scripts, debug code, and manage AI-driven workflows. Supports multi-chat, auto-attachment",
   "unity": "2021.3",

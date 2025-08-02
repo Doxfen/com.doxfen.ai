@@ -1,0 +1,22 @@
+{
+    "chatId": "0fe329ad-706d-4a84-85bd-5bdaba9d7c81",
+    "title": "Greeting",
+    "messages": [
+        {
+            "role": "user",
+            "content": "hi"
+        },
+        {
+            "role": "model",
+            "content": "Hello! How can I assist you with your Unity development today?"
+        },
+        {
+            "role": "user",
+            "content": "who are you? who made you?"
+        },
+        {
+            "role": "model",
+            "content": "I am Doxfen AI Assistant, a Unity Editor-integrated developer tool designed to assist Unity developers. I was created by Doxfen Interactive."
+        }
+    ]
+}

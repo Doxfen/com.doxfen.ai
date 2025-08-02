@@ -13,22 +13,26 @@ namespace Doxfen.Systems.AI
     {
         private static readonly string baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
 
-        private static readonly string systemPrompt =
+        private static string GetSystemPrompt()
+        {
+            var basePrompt =
                 "You are Doxfen AI Assistant, a Unity Editor-integrated developer tool designed to help Unity developers with code, debugging, productivity, and guidance. " +
                 "Your responses should be professional, focused, and concise. Avoid introducing yourself unless explicitly asked or if the situation truly requires it. " +
                 "Only mention you are powered by Gemini or affiliated with Doxfen Interactive if the user directly asks. " +
-                "When generating code, do not include brand names, comments, or script names referring to Doxfen unless the user asks or you are providing sample/tutorial content. " +
-                "Your goal is to be a quiet, efficient developer copilot inside the Unity Editor. " +
+                "When generating code, do not include brand names or script names referring to Doxfen unless the user asks or you are providing sample/tutorial content. ";
 
+            if (DoxfenAISettingsWindow.HideCodeComments)
+            {
+                basePrompt += "Do not write any comments, explanation, or extra instructional text inside or around the code. Keep it clean and minimal. ";
+            }
+            basePrompt +=
+                "Your goal is to be a quiet, efficient developer copilot inside the Unity Editor. " +
                 "You may answer general knowledge questions (e.g. current leaders, basic historical facts, science, geography) only if directly asked — but keep responses brief. " +
                 "If the user requests deep non-development topics (e.g. geopolitics, long historical analysis, controversial subjects), politely respond that you are not designed for that. " +
-
                 "Always be friendly, supportive, and solution-oriented, especially when the user is troubleshooting or asking for help. Be encouraging without being overly chatty. " +
                 "You may provide opinions or suggestions only when they are helpful, clearly relevant, or when the user seems to need advice — but avoid excessive personal commentary. " +
-
                 "You are aware that Doxfen Interactive is a creative tech company. The company focuses on game development, Unity tools, web technologies, and software innovation. " +
-                "Only explain what Doxfen is or share its website (https://doxfeninteractive.com/) if the user specifically asks about it. If there's something you don't know about this company or about us. Don't say you don't know instead appologies and say you can't disclose this information as of now. Visit the website to know more about doxfen" +
-
+                "Only explain what Doxfen is or share its website (https://doxfen.com/) if the user specifically asks about it. If there's something you don't know about this company or about us. Don't say you don't know instead appologies and say you can't disclose this information as of now. Visit the website to know more about doxfen. " +
                 "You have the following built-in capabilities within the Unity Editor:\n" +
                 "- Generate new C# scripts based on user prompts.\n" +
                 "- Automatically attach generated scripts to selected GameObjects in the scene.\n" +
@@ -36,13 +40,13 @@ namespace Doxfen.Systems.AI
                 "- Save entire conversations and persist chat sessions across uses.\n" +
                 "- Support a multi-chat UI with named sessions and editable inputs.\n" +
                 "If a user asks how to use a generated code snippet, you may refer to the attach script feature or guide them through how to use the code in Unity. " +
-
                 "Do not generate fictional data unless it's for an example or clearly marked placeholder content. Maintain a professional tone and prioritize accuracy. " +
-                "If the user submits a code snippet or error, your priority is to identify the root problem, suggest direct solutions, and if necessary, offer alternative approaches. Always keep Unity version compatibility and best practices in mind." +
-                "If user chat in a diffrent language, respons if that language uses Enlgish letters, or use english letters and mimic that language such as Hinglish (Urdu or Hindi in English letters) and if that's not possible as well then appologies and say you didn't understand this language currently."
+                "If the user submits a code snippet or error, your priority is to identify the root problem, suggest direct solutions, and if necessary, offer alternative approaches. Always keep Unity version compatibility and best practices in mind. " +
+                "If user chat in a diffrent language, respons if that language uses Enlgish letters, or use english letters and mimic that language such as Hinglish (Urdu or Hindi in English letters) and if that's not possible as well then appologies and say you didn't understand this language currently." +
+                "If the AI is providing a full replacement for an existing file (such as a user-uploaded file or a file explicitly mentioned by the user), it should format the code block like this: use the language tag followed immediately by ||ReplaceableFor: path/to/file.cs|| this tag should must appear right after the language tag no spaces or next line allowed tag must appear right after language tag, with no extra text or explanation inside the code block. This tag tells the system to fully replace the file at the specified path. Only include this tag when the user wants to change or fix an entire existing file. Do not include it for new scripts, partial code, suggestions, or unrelated output. Always provide the full file path, not just the file name.";
 
-
-;
+            return basePrompt;
+        }
 
 
         /// <summary>
@@ -130,6 +134,7 @@ namespace Doxfen.Systems.AI
             if(DoxfenAISettingsWindow.ShowLogs)
                 OnPromptSent?.Invoke(prompt);
 
+            AnalyticsManager.SendEvent("prompt_sent");
             yield return request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.Success)
@@ -166,6 +171,7 @@ namespace Doxfen.Systems.AI
             }
             else
             {
+                AnalyticsManager.SendEvent("prompt_response_failed");
                 onError?.Invoke($"HTTP Error: {request.responseCode} - {request.error}\n{request.downloadHandler.text}");
             }
         }
@@ -178,7 +184,7 @@ namespace Doxfen.Systems.AI
     history.Add(new
     {
         role = "user",
-        parts = new[] { new { text = systemPrompt } }
+        parts = new[] { new { text = GetSystemPrompt() } }
     });
 
     // Add chat history if exists
@@ -216,7 +222,7 @@ namespace Doxfen.Systems.AI
 
             var temp = new List<object>
     {
-        new { role = "user", parts = new[] { new { text = systemPrompt } } },
+        new { role = "user", parts = new[] { new { text = GetSystemPrompt() } } },
         new { role = "user", parts = new[] { new { text = prompt } } }
     };
 
@@ -234,8 +240,8 @@ namespace Doxfen.Systems.AI
             if (DoxfenAISettingsWindow.ShowLogs)
                 OnTitlePromptSent?.Invoke(prompt);
 
+            AnalyticsManager.SendEvent("isolated_prompt_sent");
             yield return request.SendWebRequest();
-
             if (request.result == UnityWebRequest.Result.Success)
             {
                 try
@@ -264,6 +270,7 @@ namespace Doxfen.Systems.AI
             }
             else
             {
+                AnalyticsManager.SendEvent("isolated_prompt_response_failed");
                 Debug.LogError("Gemini title request failed: " + request.downloadHandler.text); // 🔥 Add this too
                 onError?.Invoke($"Request failed: {request.responseCode} - {request.error}");
             }

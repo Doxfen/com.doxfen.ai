@@ -7,9 +7,13 @@ namespace Doxfen.Systems.AI
     {
         private const string ShowAttachmentKey = "Doxfen_ShowAttachmentContent";
         private const string ShowLogsKey = "Doxfen_ShowLogs";
+        private const string HideCodeCommentsKey = "Doxfen_HideCodeComments";
+        private const string SendAnalyticsDataKey = "Doxfen_SendAnalyticsData";
 
         private bool showAttachments;
         private bool showLogs;
+        private bool hideCodeComments;
+        private bool SendAnalyticsData;
 
         [MenuItem("Window/Doxfen/AI Assistant/AI Settings", false, 12)]
         public static void ShowWindow()
@@ -22,6 +26,8 @@ namespace Doxfen.Systems.AI
         {
             showAttachments = EditorPrefs.GetBool(ShowAttachmentKey, false);
             showLogs = EditorPrefs.GetBool(ShowLogsKey, false);
+            hideCodeComments = EditorPrefs.GetBool(HideCodeCommentsKey, false);
+            SendAnalyticsData = EditorPrefs.GetBool(SendAnalyticsDataKey, true);
         }
 
         private void OnGUI()
@@ -37,6 +43,9 @@ namespace Doxfen.Systems.AI
 
             showAttachments = EditorGUILayout.ToggleLeft("Show Attachment Content", showAttachments);
             showLogs = EditorGUILayout.ToggleLeft("Show Logs", showLogs);
+            hideCodeComments = EditorGUILayout.ToggleLeft("Hide Code Comments", hideCodeComments);
+            GUILayout.Space(10);
+            SendAnalyticsData = EditorGUILayout.ToggleLeft("Send Analytics Data", SendAnalyticsData);
 
             GUILayout.Space(15);
             if (GUILayout.Button("Save Settings", GUILayout.Height(30)))
@@ -65,10 +74,14 @@ namespace Doxfen.Systems.AI
         {
             EditorPrefs.SetBool(ShowAttachmentKey, showAttachments);
             EditorPrefs.SetBool(ShowLogsKey, showLogs);
+            EditorPrefs.SetBool(HideCodeCommentsKey, hideCodeComments);
+            EditorPrefs.SetBool(SendAnalyticsDataKey, SendAnalyticsData);
             Debug.Log("Doxfen AI settings saved.");
         }
 
         public static bool ShowAttachmentContent => EditorPrefs.GetBool(ShowAttachmentKey, false);
         public static bool ShowLogs => EditorPrefs.GetBool(ShowLogsKey, false);
+        public static bool HideCodeComments => EditorPrefs.GetBool(HideCodeCommentsKey, false);
+        public static bool SendDataAnalytics => EditorPrefs.GetBool(SendAnalyticsDataKey, true);
     }
 }
