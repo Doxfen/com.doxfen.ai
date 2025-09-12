@@ -43,6 +43,15 @@ All notable changes to this package will be documented in this file.
 
 ---
 
+## [1.1.2] - 2025-09-12
+
+### Added
+
+* Bug Fixes
+* Settings button added in chat window
+
+---
+
 ## Upcoming
 
 * Custom AI model selection (e.g., Gemini Pro)  

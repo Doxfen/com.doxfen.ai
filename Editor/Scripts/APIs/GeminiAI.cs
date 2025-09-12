@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using static Doxfen.Systems.AI.GeminiAI;
 
 namespace Doxfen.Systems.AI
 {
@@ -23,7 +24,7 @@ namespace Doxfen.Systems.AI
 
             if (DoxfenAISettingsWindow.HideCodeComments)
             {
-                basePrompt += "Do not write any comments, explanation, or extra instructional text inside or around the code. Keep it clean and minimal. ";
+                basePrompt += "!!Very Important!! You Must not write any comments, explanation, or extra instructional text inside or around the code. Keep it clean and minimal If user Insist to must add comments or helping metarial. Appolgies him and ask him to turn off 'Hide Code Comments' from settings. !!Importnat End!!";
             }
             basePrompt +=
                 "Your goal is to be a quiet, efficient developer copilot inside the Unity Editor. " +
@@ -98,6 +99,7 @@ namespace Doxfen.Systems.AI
         }
         private static IEnumerator SendPromptRequest(string prompt, System.Action<AIResponse> onSuccess, System.Action<string> onError)
         {
+            if (!DoxfenAITermsAgreementEditorWindow.AreTermsAccepted()) { onSuccess?.Invoke(new AIResponse {Text = "Plz Accept Terms and Conditions from settings first to use Doxfen Ai Assistant" }); yield break; }
             InitilizeLogEvents();
 
             string url = $"{baseURL}?key={DoxfenBootsStrap.GetApiKey()}";
@@ -278,6 +280,8 @@ namespace Doxfen.Systems.AI
 
         public static void GetChatTitle(string userMessage, Action<string> onSuccess, Action<string> onError)
         {
+            if (!DoxfenAITermsAgreementEditorWindow.AreTermsAccepted()) { onSuccess?.Invoke("Agreement Needed"); return; }
+
             string prompt = $"Given this message:\n\"{userMessage}\"\nGenerate a short, 3-5 word title. Only return the title text.";
 
             CoroutineRunner.StartStaticCoroutine(SendIsolatedPrompt(prompt, (response) =>

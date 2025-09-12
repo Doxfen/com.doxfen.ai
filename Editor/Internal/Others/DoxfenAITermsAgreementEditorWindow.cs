@@ -20,6 +20,8 @@ namespace Doxfen.Systems.AI.Internal
         public static bool AreTermsAccepted() => EditorPrefs.GetBool(EditorPrefsKey, false);
         private void OnEnable()
         {
+            EditorPrefs.SetBool(EditorPrefsKey, false);
+
             var root = rootVisualElement;
             root.Clear();
 

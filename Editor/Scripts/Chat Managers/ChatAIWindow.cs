@@ -21,6 +21,7 @@ namespace Doxfen.Systems.AI
         Button sendButton;
         VisualElement topBar;
         Button newChatButton;
+        Button SettingsButton;
 
         bool isAwaitingResponse = false;
         bool responseWasCanceled = false;
@@ -159,6 +160,40 @@ namespace Doxfen.Systems.AI
 
             topBar.Add(logoHolder);
 
+            SettingsButton = new Button(() =>
+            {
+                var window = GetWindow<DoxfenAISettingsWindow>("AI Settings");
+                window.minSize = new Vector2(300, 100);
+            });
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.doxfen.ai/Runtime/Internal/UI PNGs/Logos/Other Logos/Settings.png");
+
+            if (icon != null)
+            {
+                var img = new Image { image = icon, scaleMode = ScaleMode.ScaleToFit };
+                img.style.width = 16;
+                img.style.height = 16;
+                SettingsButton.Add(img);
+            }
+            else
+            {
+                SettingsButton.text = "⚙";
+                SettingsButton.style.unityTextAlign = TextAnchor.MiddleCenter;
+            }
+
+            SettingsButton.style.width = 28;
+            SettingsButton.style.height = 28;
+            SettingsButton.style.marginLeft = 6;
+            SettingsButton.style.backgroundColor = new Color(0.24f, 0.26f, 0.28f);
+            SettingsButton.style.color = Color.white;
+            SettingsButton.style.unityFontStyleAndWeight = FontStyle.Bold;
+            SettingsButton.style.borderTopLeftRadius = 8;
+            SettingsButton.style.borderTopRightRadius = 8;
+            SettingsButton.style.borderBottomLeftRadius = 8;
+            SettingsButton.style.borderBottomRightRadius = 8;
+            SettingsButton.style.justifyContent = Justify.Center;
+            SettingsButton.style.alignItems = Align.Center;
+
+
             newChatButton = new Button(() =>
             {
                 OnCreateNewChat();
@@ -214,6 +249,7 @@ namespace Doxfen.Systems.AI
             topBar.Add(deleteChatButton);
 
             topBar.Add(newChatButton);
+            topBar.Add(SettingsButton);
             root.Add(topBar);
             menuButton.clicked += ToggleChatPanelVisibility;
             // --- CHAT SIDE PANEL ---

@@ -13,7 +13,7 @@ namespace Doxfen.Systems.AI.Internal
     {
         private const string MeasurementId = "G-7TZR8QT1JW";
         private const string ApiSecret = "OOmPMenhSraNmNmcWkCILg";
-        private const string ClientIdKey = "Doxfen_Client_Id"; // shared key for all Unity projects
+        private const string ClientIdKey = "Doxfen_Client_Id";
         private static string clientId;
 
         static AnalyticsManager()

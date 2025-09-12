@@ -1,3 +1,4 @@
+using Doxfen.Systems.AI.Internal;
 using UnityEditor;
 using UnityEngine;
 
@@ -58,6 +59,12 @@ namespace Doxfen.Systems.AI
             if (GUILayout.Button("Contact Support", GUILayout.Width(150), GUILayout.Height(20)))
             {
                 Application.OpenURL("mailto:doxfeninteractive@gmail.com?subject=DoxfenAiAssistant AI Assistant Support");
+            }
+            GUILayout.Space(10);
+            if (GUILayout.Button("Terms & Conditions", GUILayout.Width(150), GUILayout.Height(20)))
+            {
+                var window = GetWindow<DoxfenAITermsAgreementEditorWindow>("Doxfen AI Terms");
+                window.minSize = new Vector2(500, 600);
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
