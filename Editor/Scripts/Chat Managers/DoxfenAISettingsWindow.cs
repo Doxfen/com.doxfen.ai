@@ -58,7 +58,7 @@ namespace Doxfen.Systems.AI
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Contact Support", GUILayout.Width(150), GUILayout.Height(20)))
             {
-                Application.OpenURL("mailto:doxfeninteractive@gmail.com?subject=DoxfenAiAssistant AI Assistant Support");
+                Application.OpenURL("mailto:support@doxfen.com?subject=DoxfenAiAssistantSupport AI Assistant Support");
             }
             GUILayout.Space(10);
             if (GUILayout.Button("Terms & Conditions", GUILayout.Width(150), GUILayout.Height(20)))

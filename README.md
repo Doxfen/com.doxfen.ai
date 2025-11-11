@@ -107,7 +107,7 @@ Doxfen AI Assistant is designed to streamline development and improve how Unity 
 
 
 
-For bugs or feedback: \[doxfeninteractive@gmail.com](mailto:doxfeninteractive@gmail.com)
+For bugs or feedback: \[support@doxfen.com](mailto:info@doxfen.com)
 Official Website: https://doxfen.com/
 
 

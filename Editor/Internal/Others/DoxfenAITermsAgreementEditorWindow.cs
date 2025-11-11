@@ -147,7 +147,7 @@ You can disable analytics anytime in the settings menu of Doxfen AI Assistant. N
 All rights are reserved by Doxfen Interactive. You may not claim ownership or remove branding of this tool.
 
 <b>Contact</b>
-For support or questions: doxfeninteractive@gmail.com
+For support or questions: support@doxfen.com
 
 Thank you for using Doxfen AI!";
         }

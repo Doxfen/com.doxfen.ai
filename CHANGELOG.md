@@ -59,3 +59,12 @@ All notable changes to this package will be documented in this file.
 * Context-aware Unity command generation  
 * Analyze selected GameObjects and their children to find errors  
 * Auto-perform actions inside Unity Editor  
+
+---
+
+## [1.1.3] - 2025-11-11
+
+### Added
+
+* Bug Fixes
+* Contact Information added

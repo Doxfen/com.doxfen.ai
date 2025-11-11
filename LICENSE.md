@@ -22,9 +22,9 @@ You are "**Not Allowed To"**:
 
 
 
-All rights are reserved by **Doxfen Interactive**.
+All rights are reserved by **Doxfen**.
 
 
 
-For support or inquiries, contact: **doxfeninteractive@gmail.com**
+For support or inquiries, contact: **support@doxfen.com**
 
